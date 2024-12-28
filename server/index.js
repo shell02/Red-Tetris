@@ -1,7 +1,7 @@
 const fs = require('fs');
 const http = require('http');
 const path = require('path');
-const { Server: SocketIO } = require('socket.io');
+const { Server } = require('socket.io');
 const debug = require('debug');
 const Socket = require('./utils/Sockets');
 
@@ -43,7 +43,7 @@ function create(params) {
   return new Promise((resolve) => {
     const app = http.createServer(); // HTTP server creation
     initApp(app, params, () => {
-      const io = new SocketIO(app); // Attach Socket.IO to the server
+      const io = new Server(app, { cors: { origin: '*' } });
 
       // Stop function to close server and sockets
       const stop = (cb) => {

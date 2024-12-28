@@ -1,24 +1,20 @@
-import {
+import React, {
   createContext, useEffect, useState, useContext,
 } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import io from 'socket.io-client';
 
-const socket = io.connect('http://localhost:3001');
+const socket = io.connect('http://localhost:3031');
 
 const SocketContext = createContext();
 
-const useSocket = () => useContext(SocketContext);
+export const useSocket = () => useContext(SocketContext);
 
 function SocketProvider({ children }) {
   const [socketInstance, setSocketInstance] = useState(null);
 
   useEffect(() => {
     setSocketInstance(socket);
-
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   return (
@@ -28,4 +24,4 @@ function SocketProvider({ children }) {
   );
 }
 
-export { SocketProvider, useSocket };
+export { SocketProvider };

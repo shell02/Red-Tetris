@@ -5,37 +5,17 @@ const userState = {
   isUsernameAvailable: false,
 };
 
-export const checkUsernameAsync = createAsyncThunk(
-  'user/checkUsername',
-  async (username, socket) => {
-    socket.emit('checkUsername', { username });
-    return new Promise((resolve, reject) => {
-      socket.on('usernameChecked', (isAvailable) => {
-        if (isAvailable) {
-          resolve({ available: true });
-        } else {
-          resolve({ available: false });
-        }
-      });
-
-      socket.on('error', (err) => {
-        reject(err);
-      });
-    });
-  },
-);
-
 export const createNewPlayerAsync = createAsyncThunk(
   'user/createNewPlayer',
-  async (username, socket) => {
+  async ({ username, socket }) => {
     socket.emit('createNewPlayer', { username });
     return new Promise((resolve, reject) => {
-      socket.on('playerCreated', (player) => {
-        resolve(player);
-      });
-
-      socket.on('error', (err) => {
-        reject(err);
+      socket.on('playerCreation', (payload) => {
+        if (payload.available) {
+          resolve({ available: true });
+        } else {
+          reject();
+        }
       });
     });
   },
@@ -53,12 +33,12 @@ const UserSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(checkUsernameAsync.fulfilled, (state, action) => {
+      .addCase(createNewPlayerAsync.fulfilled, (state, action) => {
         const newState = state;
         newState.isUsernameAvailable = action.payload.available;
         return newState;
       })
-      .addCase(checkUsernameAsync.rejected, (state) => {
+      .addCase(createNewPlayerAsync.rejected, (state) => {
         const newState = state;
         newState.isUsernameAvailable = false;
         return newState;

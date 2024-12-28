@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { setUsername, checkUsernameAsync, createNewPlayerAsync } from '../reducers/UserState';
+import { setUsername, createNewPlayerAsync } from '../reducers/UserState';
 import { useSocket } from '../src/SocketContext';
 
 function Home() {
@@ -11,31 +11,20 @@ function Home() {
   const isUsernameAvailable = useSelector((state) => state.user.isUsernameAvailable);
   const dispatch = useDispatch();
 
-  const handleUsernameChange = (e) => {
-    dispatch(setUsername(e.target.value));
-    dispatch(checkUsernameAsync(e.target.value, socket));
+  const handleUsernameChange = (value) => {
+    dispatch(setUsername(value));
   };
 
   const handleUsernameSubmit = (e) => {
     e.preventDefault();
-    if (!isUsernameAvailable) {
-      return;
-    }
-    dispatch(createNewPlayerAsync(username, socket));
+    dispatch(createNewPlayerAsync({ username, socket }));
   };
 
-  const handleCreateGame = () => {
+  const handleNavigate = (path) => {
     if (!isUsernameAvailable) {
       return;
     }
-    navigate('/create');
-  };
-
-  const handleJoinGame = () => {
-    if (!isUsernameAvailable) {
-      return;
-    }
-    navigate('/join');
+    navigate(path);
   };
 
   return (
@@ -45,9 +34,9 @@ function Home() {
       <input
         type="text"
         value={username}
-        onChange={(e) => dispatch(handleUsernameChange(e.target.value))}
+        onChange={(e) => handleUsernameChange(e.target.value)}
       />
-      <button type="button" onClick={handleUsernameSubmit}>Submit</button>
+      <button type="button" onClick={(e) => handleUsernameSubmit(e)}>Submit</button>
       <p>
         Username:
         {username}
@@ -55,8 +44,8 @@ function Home() {
       <p>
         {isUsernameAvailable ? 'Username is available' : 'Username is not available'}
       </p>
-      <button type="button" onClick={handleCreateGame}>Create a game</button>
-      <button type="button" onClick={handleJoinGame}>Join a game</button>
+      <button type="button" onClick={() => handleNavigate('/create')}>Create a game</button>
+      <button type="button" onClick={() => handleNavigate('/join')}>Join a game</button>
 
     </div>
   );

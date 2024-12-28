@@ -1,4 +1,4 @@
-import Player from './Player';
+const Player = require('./Player');
 
 class Socket {
   constructor(io) {
@@ -25,28 +25,27 @@ class Socket {
 
       socket.on('join', (payload) => {
         if (payload.username) {
+          this.loginfo(`Socket join: ${payload.username}`);
           const updatedPlayer = this.players.find((player) => player.username === payload.username);
           if (updatedPlayer) {
             updatedPlayer.socketId = socket.id;
-          } else {
-            socket.emit('error', { message: 'Player not found' });
           }
         }
-        this.loginfo(`Socket join: ${payload}`);
-        socket.join(payload);
-      });
-
-      // useless, put it in createNewPlayer
-      socket.on('checkUsername', (payload) => {
-        const player = this.players.find((p) => p.username === payload.username);
-        if (player) {
-          socket.emit('usernameChecked', false);
-        } else {
-          socket.emit('usernameChecked', true);
-        }
+        this.loginfo(`Socket join: ${payload.username}`);
       });
 
       socket.on('createNewPlayer', (payload) => {
+        this.loginfo(`Socket createNewPlayer: ${payload.username}`);
+        const usernameExists = this.players.find((p) => p.username === payload.username);
+        if (usernameExists && usernameExists.socketId === socket.id) {
+          socket.emit('playerCreation', { available: true });
+          return;
+        }
+        if (usernameExists) {
+          this.logerror(`Username ${payload.username} already exists`);
+          socket.emit('playerCreation', { available: false });
+          return;
+        }
         const player = this.players.find((p) => p.socketId === socket.id);
         if (player) {
           player.username = payload.username;
@@ -54,7 +53,7 @@ class Socket {
           const newPlayer = new Player(payload.username, socket.id);
           this.players.push(newPlayer);
         }
-        socket.emit('playerCreated', player);
+        socket.emit('playerCreation', { available: true });
       });
 
       socket.on('disconnect', () => {
@@ -64,4 +63,4 @@ class Socket {
   }
 }
 
-export default Socket;
+module.exports = Socket;

@@ -18,6 +18,7 @@
   "description": "",
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.7",
+    "cors": "^2.8.5",
     "debug": "^4.3.7",
     "express": "^4.21.0",
     "react": "^18.3.1",
