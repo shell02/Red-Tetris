@@ -1,0 +1,28 @@
+{
+    "env": {
+      "browser": true,
+      "es2021": true
+    },
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "airbnb"
+    ],
+    "parserOptions": {
+      "ecmaFeatures": {
+        "jsx": true
+      },
+      "ecmaVersion": "latest",
+      "sourceType": "module"
+    },
+    "plugins": [
+      "react",
+      "react-hooks"
+    ],
+    "rules": {
+      "react/react-in-jsx-scope": "off", // If you're using React 17+ (no need to import React)
+      "react/prop-types": "off", // Turn off prop-types validation (if not needed)
+      "eslint-plugin-import/no-extraneous-dependencies": "off" // Turn off import/no-extraneous-dependencies
+    }
+  }
+  
