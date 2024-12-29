@@ -1,17 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setUsername, createNewPlayerAsync } from '../reducers/UserState';
-import { useSocket } from '../src/SocketContext';
+import { useSocket } from '../providers/SocketProvider';
 
 function Home() {
   const socket = useSocket();
   const navigate = useNavigate();
-  const username = useSelector((state) => state.user.username);
-  const isUsernameAvailable = useSelector((state) => state.user.isUsernameAvailable);
+  const [error, setError] = useState('');
+  const { username, available, status } = useSelector((state) => state.user);
   const dispatch = useDispatch();
 
   const handleUsernameChange = (value) => {
+    const regex = /^[a-zA-Z0-9_-]+$/;
+
+    if (regex.test(value)) {
+      setError('');
+    } else {
+      setError('Username can only contain letters, numbers, hyphens (-), and underscores (_)');
+    }
+
     dispatch(setUsername(value));
   };
 
@@ -21,7 +29,8 @@ function Home() {
   };
 
   const handleNavigate = (path) => {
-    if (!isUsernameAvailable) {
+    if (!available) {
+      setError('Please enter a valid username');
       return;
     }
     navigate(path);
@@ -42,7 +51,12 @@ function Home() {
         {username}
       </p>
       <p>
-        {isUsernameAvailable ? 'Username is available' : 'Username is not available'}
+        { error && <span>{error}</span> }
+      </p>
+      <p>
+        { status === 'fulfilled' && <span>Username available</span> }
+        { status === 'pending' && <span>Checking...</span> }
+        { status === 'rejected' && <span>Username already taken</span> }
       </p>
       <button type="button" onClick={() => handleNavigate('/create')}>Create a game</button>
       <button type="button" onClick={() => handleNavigate('/join')}>Join a game</button>

@@ -19,18 +19,15 @@ class Socket {
   listen() {
     this.io.on('connection', (socket) => {
       this.logInfo(`Socket connected: ${socket.id}`);
-      socket.on('action', (action) => {
-        if (action.type === 'server/ping') {
-          socket.emit('action', { type: 'pong' });
-        }
-      });
 
       socket.on('join', (payload) => {
         if (payload.username) {
           if (this.checkUsername(payload.username)) {
+            this.logInfo(`Username ${payload.username} already exists`);
             socket.emit('backHome');
           } else {
             this.createNewPlayer(payload.username, socket.id);
+            this.logInfo(`Username ${payload.username} recreated`);
           }
         }
       });
@@ -39,12 +36,18 @@ class Socket {
         if (this.checkUsername(payload.username)) {
           const existingPlayer = this.getOnePlayerByUsername(payload.username);
           if (existingPlayer.socketId === socket.id) {
+            this.logInfo(`Username ${payload.username} asked for creation again`);
             socket.emit('playerCreation', { available: true });
           } else {
             this.logError(`Username ${payload.username} already exists`);
             socket.emit('playerCreation', { available: false });
           }
         } else {
+          const player = this.getOnePlayerById(socket.id);
+          if (player) {
+            this.removePlayerByUsername(player.username);
+          }
+          this.logInfo(`Username ${payload.username} created`);
           this.createNewPlayer(payload.username, socket.id);
           socket.emit('playerCreation', { available: true });
         }
@@ -54,6 +57,12 @@ class Socket {
         this.logInfo('New game');
         const player = this.getOnePlayerById(socket.id);
         if (player) {
+          const existingGame = this.gameManager.getGenGameByPlayer(player);
+          if (existingGame) {
+            this.gameManager.removePlayerFromGame(existingGame.id, player);
+            socket.leave(existingGame.id);
+            socket.to(existingGame.id).emit('gamePlayers', { players: existingGame.players });
+          }
           const game = this.gameManager.createGame(player);
           if (game) {
             this.logInfo(`Game created: ${game.id}`);
@@ -74,8 +83,16 @@ class Socket {
           const game = this.gameManager.addPlayerToGame(payload.gameId, player);
           if (game) {
             socket.join(game.id);
-            socket.to(game.id).emit('newPlayer', { playerUsername: player.username });
+            socket.emit('gameJoined', { gameId: game.id });
+            socket.to(game.id).emit('gamePlayers', { players: game.players });
           }
+        }
+      });
+
+      socket.on('getGamePlayers', (payload) => {
+        const game = this.gameManager.getGenGameById(payload.gameId);
+        if (game) {
+          socket.emit('gamePlayers', { players: game.players });
         }
       });
 
@@ -85,8 +102,15 @@ class Socket {
           const game = this.gameManager.removePlayerFromGame(payload.gameId, player);
           if (game) {
             socket.leave(game.id);
-            socket.to(game.id).emit('playerLeft', { playerUsername: player.username });
+            socket.to(game.id).emit('gamePlayers', { players: game.players });
           }
+        }
+      });
+
+      socket.on('leaveAllGames', () => {
+        const player = this.getOnePlayerById(socket.id);
+        if (player) {
+          this.gameManager.removePlayer(player);
         }
       });
 

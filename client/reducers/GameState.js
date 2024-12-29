@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const gameState = {
-  gameId: 0,
+  gameId: '',
   gameCreated: false,
 };
 
@@ -41,6 +41,18 @@ export const joinGameAsync = createAsyncThunk(
   },
 );
 
+export const getGamePlayersAsync = createAsyncThunk(
+  'user/getGamePlayers',
+  async ({ gameId, socket }) => {
+    socket.emit('getGamePlayers', { gameId });
+    return new Promise((resolve) => {
+      socket.on('gamePlayers', (payload) => {
+        resolve(payload.players);
+      });
+    });
+  },
+);
+
 const GameSlice = createSlice({
   name: 'game',
   initialState: gameState,
@@ -51,6 +63,11 @@ const GameSlice = createSlice({
         const newState = state;
         newState.gameId = action.payload.gameId;
         newState.gameCreated = true;
+        return newState;
+      })
+      .addCase(joinGameAsync.fulfilled, (state, action) => {
+        const newState = state;
+        newState.gameId = action.payload.gameId;
         return newState;
       });
   },

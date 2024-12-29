@@ -18,7 +18,7 @@ class ServerManager {
   }
 
   requestHandler(req, res) {
-    const file = req.url === '/bundle.js' ? '../dist/bundle.js' : '../dist/index.html';
+    const file = req.url === '/bundle.js' ? '../../dist/bundle.js' : '../../dist/index.html';
 
     fs.readFile(path.join(__dirname, file), (err, data) => {
       if (err) {

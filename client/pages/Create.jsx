@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useSocket } from '../src/SocketContext';
+import { useSocket } from '../providers/SocketProvider';
 import { createNewGameAsync } from '../reducers/GameState';
 
 function Create() {

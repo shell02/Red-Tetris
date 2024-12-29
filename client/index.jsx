@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { createLogger } from 'redux-logger';
 import { thunk } from 'redux-thunk';
-import App from './src/App';
+import App from './App';
 import rootReducer from './reducers';
 
 const logger = createLogger({

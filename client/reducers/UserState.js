@@ -2,7 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const userState = {
   username: '',
-  isUsernameAvailable: false,
+  available: false,
+  status: 'idle',
 };
 
 export const createNewPlayerAsync = createAsyncThunk(
@@ -35,12 +36,19 @@ const UserSlice = createSlice({
     builder
       .addCase(createNewPlayerAsync.fulfilled, (state, action) => {
         const newState = state;
-        newState.isUsernameAvailable = action.payload.available;
+        newState.available = action.payload.available;
+        newState.status = 'fulfilled';
+        return newState;
+      })
+      .addCase(createNewPlayerAsync.pending, (state) => {
+        const newState = state;
+        newState.status = 'pending';
         return newState;
       })
       .addCase(createNewPlayerAsync.rejected, (state) => {
         const newState = state;
-        newState.isUsernameAvailable = false;
+        newState.available = false;
+        newState.status = 'rejected';
         return newState;
       });
   },

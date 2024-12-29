@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { useSocket } from '../src/SocketContext';
+import { useSocket } from '../providers/SocketProvider';
 
 function Socket() {
   const navigate = useNavigate();
