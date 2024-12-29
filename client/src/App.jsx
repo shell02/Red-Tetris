@@ -5,6 +5,7 @@ import Create from '../pages/Create';
 import Join from '../pages/Join';
 import { SocketProvider } from './SocketContext';
 import Socket from '../components/socket';
+import Game from '../pages/Game';
 
 // Basic React component
 function App() {
@@ -16,6 +17,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/create" element={<Create />} />
             <Route path="/join" element={<Join />} />
+            <Route path="/:gameId/:username" element={<Game />} />
           </Route>
         </Routes>
       </Router>

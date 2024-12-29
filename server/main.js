@@ -1,4 +1,5 @@
-import { create } from './index';
+const http = require('http');
+const { ServerManager } = require('./utils/ServerManager');
 
 const params = {
   host: 'localhost',
@@ -6,6 +7,6 @@ const params = {
   url: 'http://localhost:3031',
 };
 
-create(params).then(() => {
-  console.log('Server is up!');
-});
+const app = http.createServer();
+
+new ServerManager(params).start(app);

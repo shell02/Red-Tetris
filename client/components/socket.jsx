@@ -1,15 +1,20 @@
 import React, { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useSocket } from '../src/SocketContext';
 
 function Socket() {
+  const navigate = useNavigate();
   const socket = useSocket();
   const username = useSelector((state) => state.user.username);
 
   useEffect(() => {
     if (socket) {
       socket.emit('join', { username });
+
+      socket.on('backHome', () => {
+        navigate('/');
+      });
     }
   }, [socket]);
 
