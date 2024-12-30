@@ -1,18 +1,19 @@
-const PlayerGame = require('./PlayerGame');
+const PlayerStatus = {
+  SPECTATING: 'spectating',
+  PLAYING: 'playing',
+};
 
 class Player {
   constructor(username, socketId) {
     this.username = username;
     this.socketId = socketId;
-    this.game = null;
+    this.grid = [];
+    this.status = PlayerStatus.SPECTATING;
+    this.gameId = null;
   }
 
-  startGame() {
-    this.game = new PlayerGame();
-  }
-
-  addPiece(piece) {
-    this.game.addPiece(piece);
+  setGameId(gameId) {
+    this.gameId = gameId;
   }
 }
 

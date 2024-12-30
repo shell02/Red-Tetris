@@ -2,7 +2,9 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 
 const gameState = {
   gameId: '',
-  gameCreated: false,
+  gameJoined: false,
+  players: [],
+  openGames: [],
 };
 
 export const createNewGameAsync = createAsyncThunk(
@@ -23,7 +25,7 @@ export const getOpenGamesAsync = createAsyncThunk(
     socket.emit('getOpenGames');
     return new Promise((resolve) => {
       socket.on('openGames', (payload) => {
-        resolve(payload.openGames);
+        resolve(payload);
       });
     });
   },
@@ -31,8 +33,8 @@ export const getOpenGamesAsync = createAsyncThunk(
 
 export const joinGameAsync = createAsyncThunk(
   'user/joinGame',
-  async ({ gameId, socket }) => {
-    socket.emit('joinGame', { gameId });
+  async ({ selectedGameId, socket }) => {
+    socket.emit('joinGame', { selectedGameId });
     return new Promise((resolve) => {
       socket.on('gameJoined', (payload) => {
         resolve(payload);
@@ -47,7 +49,19 @@ export const getGamePlayersAsync = createAsyncThunk(
     socket.emit('getGamePlayers', { gameId });
     return new Promise((resolve) => {
       socket.on('gamePlayers', (payload) => {
-        resolve(payload.players);
+        resolve(payload);
+      });
+    });
+  },
+);
+
+export const leaveGameAsync = createAsyncThunk(
+  'user/leaveGame',
+  async ({ gameId, socket }) => {
+    socket.emit('leaveGame', { gameId });
+    return new Promise((resolve) => {
+      socket.on('gameLeft', (payload) => {
+        resolve(payload);
       });
     });
   },
@@ -56,21 +70,45 @@ export const getGamePlayersAsync = createAsyncThunk(
 const GameSlice = createSlice({
   name: 'game',
   initialState: gameState,
-  reducers: {},
+  reducers: {
+    setOpenGames: (state, action) => {
+      const newState = state;
+      newState.openGames = action.payload.openGames;
+      return newState;
+    },
+    setPlayers: (state, action) => {
+      const newState = state;
+      newState.players = action.payload.players;
+      return newState;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(createNewGameAsync.fulfilled, (state, action) => {
         const newState = state;
         newState.gameId = action.payload.gameId;
-        newState.gameCreated = true;
+        newState.gameJoined = true;
+        return newState;
+      })
+      .addCase(getGamePlayersAsync.fulfilled, (state, action) => {
+        const newState = state;
+        newState.players = action.payload.players;
         return newState;
       })
       .addCase(joinGameAsync.fulfilled, (state, action) => {
         const newState = state;
         newState.gameId = action.payload.gameId;
+        newState.gameJoined = true;
+        return newState;
+      })
+      .addCase(getOpenGamesAsync.fulfilled, (state, action) => {
+        const newState = state;
+        newState.openGames = action.payload.openGames;
         return newState;
       });
   },
 });
+
+export const { setOpenGames, setPlayers } = GameSlice.actions;
 
 export default GameSlice.reducer;

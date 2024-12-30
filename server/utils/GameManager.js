@@ -1,63 +1,66 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 const uuid = require('uuid');
-const GeneratorGame = require('./GeneratorGame');
+const Game = require('./Game');
 
 class GameManager {
   constructor() {
-    this.genGames = [];
+    this.games = [];
   }
 
   createGame(player) {
     const gameId = uuid.v4();
 
-    const genGame = new GeneratorGame(gameId);
-    genGame.addPlayer(player);
-    this.genGames.push(genGame);
+    const game = new Game(gameId, player);
+    game.addPlayer(player);
+    this.games.push(game);
 
-    return genGame;
+    return game;
   }
 
   addPlayerToGame(gameId, player) {
-    const genGame = this.getGenGameById(gameId);
-    if (genGame) {
-      genGame.addPlayer(player);
-      return genGame;
+    const game = this.games.find((g) => g.id === gameId);
+    if (game) {
+      game.addPlayer(player);
+      return game;
     }
     return null;
   }
 
   removePlayerFromGame(gameId, player) {
-    const genGame = this.getGenGameById(gameId);
-    if (genGame) {
-      genGame.removePlayer(player);
-      if (genGame.players.length === 0) {
-        this.genGames = this.genGames.filter((game) => game.id !== genGame.id);
+    const game = this.getGameById(gameId);
+    if (game) {
+      game.removePlayer(player);
+      if (game.players.length === 0) {
+        this.games = this.games.filter((g) => g.id !== game.id);
         return null;
       }
-      return genGame;
+      return game;
     }
     return null;
   }
 
   removePlayer(player) {
-    this.genGames.forEach((game) => {
+    this.games.forEach((game) => {
       if (game.hasPlayer(player)) {
         game.removePlayer(player);
       }
     });
-    this.genGames = this.genGames.filter((game) => game.players.length > 0);
+    this.games = this.games.filter((game) => game.players.length > 0);
   }
 
   getOpenGames() {
-    return this.genGames;
+    return this.games.map((game) => ({
+      gameId: game.id,
+      leader: game.leader.username,
+    }));
   }
 
-  getGenGameById(gameId) {
-    return this.genGames.find((game) => game.id === gameId);
+  getGameById(gameId) {
+    return this.games.find((g) => g.id === gameId);
   }
 
-  getGenGameByPlayer(player) {
-    return this.genGames.find((game) => game.hasPlayer(player));
+  getGameByPlayer(player) {
+    return this.games.find((game) => game.hasPlayer(player));
   }
 }
 

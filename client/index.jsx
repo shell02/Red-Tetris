@@ -24,7 +24,7 @@ const store = configureStore({
 
 store.subscribe(() => {
   const state = store.getState();
-  sessionStorage.setItem('state', JSON.stringify(state));
+  sessionStorage.setItem('state', JSON.stringify({ user: state.user }));
 });
 
 // Render the App component

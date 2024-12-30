@@ -1,26 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { getGamePlayersAsync } from '../reducers/GameState';
+import { getGamePlayersAsync, setPlayers, leaveGameAsync } from '../reducers/GameState';
 import { useSocket } from '../providers/SocketProvider';
 
 function Game() {
   const socket = useSocket();
+  const navigate = useNavigate();
   const { gameId, username } = useParams();
-  const [players, setPlayers] = useState([]);
+  const [opponents, setOpponents] = useState([]);
   const dispatch = useDispatch();
 
+  const handleLeaveGame = () => {
+    dispatch(leaveGameAsync({ gameId, socket }));
+    navigate('/');
+  };
+
   useEffect(() => {
-    const result = dispatch(getGamePlayersAsync({ gameId, socket }));
-    result.then((data) => {
-      setPlayers(data.payload.players);
+    dispatch(getGamePlayersAsync({ gameId, socket }));
+
+    socket.on('gamePlayers', (payload) => {
+      dispatch(setPlayers(payload.players));
+      setOpponents(payload.players.filter((player) => player.username !== username));
     });
-  }, []);
+  }, [socket]);
 
   return (
     <div>
       <h1>
-        Game
+        Game:
         {gameId}
       </h1>
       <h2>
@@ -28,10 +36,11 @@ function Game() {
         {username}
       </h2>
       <ul>
-        {players && players.map((player) => (
-          <li key={player.id}>{player.username}</li>
+        {opponents && opponents.map((player) => (
+          <li key={player.username}>{player.username}</li>
         ))}
       </ul>
+      <button type="button" onClick={handleLeaveGame}>Leave Game</button>
     </div>
   );
 }
